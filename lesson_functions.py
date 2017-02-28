@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 from skimage.feature import hog
@@ -153,12 +154,23 @@ def single_img_features(image, color_space='RGB', spatial_size=(32, 32),
                                     vis=False, feature_vec=True))
             hog_features = np.ravel(hog_features)        
         else:
-            hog_features = get_hog_features(feature_image[:,:,hog_channel], orient, 
-                        pix_per_cell, cell_per_block, vis=False, feature_vec=True)
+            # Call with two outputs if vis==True
+            if vis == True:
+                hog_features, hog_image = get_hog_features(feature_image[:,:,hog_channel], 
+                                    orient, pix_per_cell, cell_per_block, 
+                                    vis=vis, feature_vec=True)
+            # Otherwise call with one output
+            else:      
+                hog_features = get_hog_features(feature_image[:,:,hog_channel], 
+                                    orient, pix_per_cell, cell_per_block, 
+                                    vis=vis, feature_vec=True)
         # Append the new feature vector to the features list
         img_features.append(hog_features)
     # Return list of feature vectors
-    return img_features
+    if hog_image is None:
+        return img_features
+    else:
+        return img_features, hog_image
 
 
 # define a function you will pass an image
@@ -201,7 +213,7 @@ def search_windows(img, windows, clf, scaler, color_space='RGB',
 def visualize(fig, rows, cols, imgs, titles):
     for i, img in enumerate(imgs):
         plt.subplot(rows, cols, i+1)
-        plt.subtitle(i+1)
+        plt.title(i+1)
         img_dims = len(img.shape)
         if img_dims < 3:
             plt.imshow(img, cmap='hot')
@@ -321,7 +333,7 @@ def main():
                         hog_channel=hog_channel, spatial_feat=spatial_feat, 
                         hist_feat=hist_feat, hog_feat=hog_feat, vis=True)
    
-   images = [car_image, car_hog_image, notcar_image, notcar_hog_image]
+   images = [car_img, car_hog_image, notcar_img, notcar_hog_image]
    titles = ['car image', 'car HOG image', 'notcar image', 'notcar HOG image']
    fig = plt.figure(figsize=(12,3)) # , dpi=80)
    visualize(fig, 1, 4, images, titles )
