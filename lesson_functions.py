@@ -5,6 +5,8 @@ import numpy as np
 import cv2
 from skimage.feature import hog
 
+# change from default RGB to a different color system
+# for instance, the 
 def convert_color(img, conv='RGB2YCrCb'):
     if conv == 'RGB2YCrCb':
         return cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
@@ -189,8 +191,8 @@ def search_windows(img, windows, clf, scaler, color_space='RGB',
     for window in windows:
         #3) Extract the test window from original image 
         #   and save if window has features in it
-        test_img = cv2.resize(img[window[0][1]:window[1][1]],
-                              img[window[0][0]:window[1][0]],
+        test_img = cv2.resize(img[window[0][1]:window[1][1],
+                                  window[0][0]:window[1][0]],
                               (64,64))
         #4) Extract features for that window using single img_features()
         features = single_img_features(test_img, color_space=color_space, 
@@ -200,7 +202,9 @@ def search_windows(img, windows, clf, scaler, color_space='RGB',
                         hog_channel=hog_channel, spatial_feat=spatial_feat, 
                         hist_feat=hist_feat, hog_feat=hog_feat)
         #5) Scale extracted features to be fed to classifier
-        test_features = scaler.transform(np.array(features).reshape(1, -1))
+        temp = np.concatenate(features)
+        temp_flattened = temp.reshape(1, -1)
+        test_features = scaler.transform(temp_flattened)
         #6) predict using your classifier
         prediction = clf.predict(test_features)
         #7 if positive (prediction == 1) then save the window
