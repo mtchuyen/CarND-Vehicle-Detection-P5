@@ -57,8 +57,8 @@ def test_images2(svc, X_scaler, spatial_size,
         if scale != 1:
             imshape = ctrans_tosearch.shape
             ctrans_tosearch = cv2.resize(ctrans_tosearch,
-                                np.int(imshape[1]/scale),
-                                np.int(imshape[0]/scale))
+                                (np.int(imshape[1]/scale),
+                                np.int(imshape[0]/scale)))
         
         # break out the three color channels
         ch1 = ctrans_tosearch[:,:,0]
@@ -134,24 +134,24 @@ def test_images2(svc, X_scaler, spatial_size,
                     xbox_left = np.int(xleft*scale)
                     ytop_draw = np.int(ytop*scale)
                     win_draw = np.int(window*scale)
-                    cv2.rectangle(draw_img, (xbox_left, ytop_draw + start),
+                    cv2.rectangle(draw_img, (xbox_left, ytop_draw + ystart),
                                   (xbox_left + win_draw, ytop_draw + win_draw + ystart),
                                   (0, 0, 255))
                     img_boxes.append(((xbox_left, ytop_draw + ystart),
                                       (xbox_left + win_draw, 
-                                      ytop_draw + win_draw+ystart)))
+                                      ytop_draw + win_draw+ ystart)))
                     # add to heatmap where we think we found it
-                    heatmap[ytop_draw+ystart:ytop_draw+win_draw_ystart,
+                    heatmap[ytop_draw+ystart:ytop_draw+win_draw + ystart,
                             xbox_left:xbox_left + win_draw] += 1
-    print(time.time() - t, ' seconds to run, total windows= ', count)
-    out_images.append(draw_img)
-    
-    out_titles.append(img_src[-12:])
-    out_titles.append(img_src[-12:])
-    # heatmap = 255*heatmap/np.max(heatmap)
-    out_images.append(heatmap)
-    out_maps.append(heatmap)
-    out_boxes.append(img_boxes)
+        print(time.time() - t, ' seconds to run, total windows= ', count)
+        out_images.append(draw_img)
+        
+        out_titles.append(img_src[-12:])
+        out_titles.append(img_src[-12:])
+        # heatmap = 255*heatmap/np.max(heatmap)
+        out_images.append(heatmap)
+        out_maps.append(heatmap)
+        out_boxes.append(img_boxes)
     
     fig = plt.figure(figsize=(12, 24))
     visualize(fig, 8, 2, out_images, out_titles)
@@ -212,23 +212,12 @@ def test_images(svc, X_scaler, spatial_size,
     fig = plt.figure(figsize=(12, 18), dpi=300)
     visualize(fig, 5, 2, images, titles)
     
-def main():
+def train(color_space, orient, pix_per_cell, cell_per_block, hog_channel,
+          spatial_size, hist_bins, spatial_feat, hist_feat, hog_feat):
    f = open("cars.txt",'r')
    cars = f.readlines()
    f = open("notcars.txt",'r')
    notcars = f.readlines()
-
-   # define feature parameters
-   color_space = 'HSV' # can be RGB, HSV, LUV, HLS, YUV, YCrCb
-   orient = 9
-   pix_per_cell = 8
-   cell_per_block = 2
-   hog_channel = "ALL" # can be 0, 1, 2, or "ALL"
-   spatial_size = (16, 16) # spatial binning dimensions
-   hist_bins = 16 # number of histogram bins
-   spatial_feat = True # spatial_features on or off
-   hist_feat = True # Histogram features on or off
-   hog_feat = True # HOG features on or off
    
    t = time.time()
    n_samples = 1000
@@ -290,10 +279,26 @@ def main():
    
    # Check the accuracy score of the SVC
    print('Test accuracy of SVC = ', round(svc.score(X_test, y_test), 4))
+   return (X_scaler, svc)
+def main():
+   # define feature parameters
+   color_space = 'HSV' # can be RGB, HSV, LUV, HLS, YUV, YCrCb
+   orient = 9
+   pix_per_cell = 8
+   cell_per_block = 2
+   hog_channel = "ALL" # can be 0, 1, 2, or "ALL"
+   spatial_size = (16, 16) # spatial binning dimensions
+   hist_bins = 16 # number of histogram bins
+   spatial_feat = True # spatial_features on or off
+   hist_feat = True # Histogram features on or off
+   hog_feat = True # HOG features on or off
+   (X_scaler, svc) = train(color_space, orient, pix_per_cell, cell_per_block, hog_channel,
+          spatial_size, hist_bins, spatial_feat, hist_feat, hog_feat)   
    # run on test data
    test_images2(svc, X_scaler, spatial_size,
                 hist_bins, orient, pix_per_cell, cell_per_block,
                 hog_channel, spatial_feat, hist_feat, hog_feat, 
                 rescale=1.5)
+
 if __name__ == "__main__":
     main()
