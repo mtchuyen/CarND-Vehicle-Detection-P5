@@ -34,7 +34,8 @@ class Video():
             num = num + 1
             next_image = self.get_image_from_mp4(reader, num)
         writer.close()
-            
+
+
 def main():
     video_proc = Video(3, debug=False)
     video_proc.run_video('project_video.mp4', 'output_images/challenge_output_corrected.mp4')
