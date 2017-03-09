@@ -222,7 +222,8 @@ def test_images(svc, X_scaler, spatial_size,
     visualize(fig, 5, 2, images, titles)
 
 # Define a single function that can extract features using hog sub-sampling and make predictions
-def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins):
+def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, 
+              cell_per_block, spatial_size, hist_bins, xy_window, color_space):
     
     draw_img = np.copy(img)
     
@@ -237,10 +238,11 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, ce
     
     # color convert to better color space
     #ctrans_tosearch = convert_color(img_tosearch, conv='RGB2YCrCb')
-    ctrans_tosearch = convert_color(img_tosearch, conv='RGB2HSV')
+    ctrans_tosearch = convert_color(img_tosearch, input='RGB', conv=color_space)
     if scale != 1:
         imshape = ctrans_tosearch.shape
-        ctrans_tosearch = cv2.resize(ctrans_tosearch, (np.int(imshape[1]/scale), np.int(imshape[0]/scale)))
+        ctrans_tosearch = cv2.resize(ctrans_tosearch, (np.int(imshape[1]/scale),
+                                                        np.int(imshape[0]/scale)))
         
     ch1 = ctrans_tosearch[:,:,0]
     ch2 = ctrans_tosearch[:,:,1]
@@ -277,7 +279,7 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, ce
             ytop = ypos*pix_per_cell
 
             # Extract the image patch
-            subimg = cv2.resize(ctrans_tosearch[ytop:ytop+window, xleft:xleft+window], (64,64))
+            subimg = cv2.resize(ctrans_tosearch[ytop:ytop+window, xleft:xleft+window], xy_window)
           
             # Get color features
             spatial_features = bin_spatial(subimg, size=spatial_size)
@@ -304,25 +306,27 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, ce
     return draw_img, heatmap
 
 def process_frame(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
-                  cell_per_block, spatial_size, hist_bins, threshold):
+                  cell_per_block, spatial_size, hist_bins, threshold, xy_window, 
+                  color_space):
     draw_img, heatmap = find_cars(img, ystart, ystop, scale, svc, X_scaler, orient,
-                                  pix_per_cell, cell_per_block, spatial_size, hist_bins)
+                                  pix_per_cell, cell_per_block, spatial_size, 
+                                  hist_bins, xy_window, color_space)
     heatmap = apply_threshold(heatmap, threshold)
     labels = label(heatmap)
     draw_img = draw_labeled_bboxes(img, labels)
     return draw_img, heatmap
 
 def process_images(ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
-                  cell_per_block, spatial_size, hist_bins):
+                  cell_per_block, spatial_size, hist_bins, xy_window, threshold,
+                  color_space):
     out_images = []
     out_titles = []
-    threshold = 3
     searchpath = "test_images/*"
     example_images = glob.glob(searchpath)
     for img_src in example_images:
         img = mpimg.imread(img_src)
         draw_img, heatmap = process_frame(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
-                  cell_per_block, spatial_size, hist_bins, threshold)
+                  cell_per_block, spatial_size, hist_bins, threshold, xy_window, color_space)
         out_images.append(draw_img)
         out_images.append(heatmap)
         out_titles.append(img_src[-12:])
@@ -409,7 +413,7 @@ def main():
    orient = 9
    pix_per_cell = 8
    cell_per_block = 2
-   scale = 1
+   scale = 1.5
    ystart = 400
    ystop = 656
    hog_channel = "ALL" # can be 0, 1, 2, or "ALL"
@@ -419,6 +423,7 @@ def main():
    hist_feat = True # Histogram features on or off
    hog_feat = True # HOG features on or off
    xy_window = (64, 64)
+   threshold = 2
    (X_scaler, svc) = train(color_space, orient, pix_per_cell, cell_per_block, hog_channel,
           spatial_size, hist_bins, spatial_feat, hist_feat, hog_feat)   
    # run on test data
@@ -434,6 +439,7 @@ def main():
                 rescale=1)
    '''
    process_images(ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell,
-                  cell_per_block, spatial_size, hist_bins)    
+                  cell_per_block, spatial_size, hist_bins, xy_window,
+                  threshold, color_space)    
 if __name__ == "__main__":
     main()

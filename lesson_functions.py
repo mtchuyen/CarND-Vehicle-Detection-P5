@@ -7,15 +7,33 @@ from skimage.feature import hog
 
 # change from default RGB to a different color system
 # for instance, the 
-def convert_color(img, conv='RGB2YCrCb'):
-    if conv == 'RGB2YCrCb':
-        return cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
-    if conv == 'BGR2YCrCb':
-        return cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
-    if conv == 'RGB2LUV':
-        return cv2.cvtColor(img, cv2.COLOR_RGB2LUV)
-    if conv == 'RGB2HSV':
-        return cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+def convert_color(img, input, conv):
+    if input == 'RGB':
+        if conv == 'YCrCb':
+            return cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
+        elif conv == 'LUV':
+            return cv2.cvtColor(img, cv2.COLOR_RGB2LUV)
+        elif conv == 'HSV':
+            return cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+        elif conv == 'HLS':
+            return cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
+        elif conv == 'YUV':
+            return cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
+        else:
+            raise Exception("conv not found for input RGB")
+    elif input == 'BGR':
+        if conv == "YCrCb":
+            return cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
+        elif conv == 'LUV':
+            return cv2.cvtColor(img, cv2.COLOR_BGR2LUV)
+        elif conv == 'HSV':
+            return cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        elif conv == 'HLS':
+            return cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+        elif conv == 'YUV':
+            return cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
+        else:
+            raise Exception("conv not found for input BGR")
 
 # Define a function to return HOG features and visualization
 # pass an image to along with HOG parameters.
