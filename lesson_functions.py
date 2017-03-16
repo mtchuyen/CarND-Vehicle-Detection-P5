@@ -103,7 +103,10 @@ def extract_features(imgs, color_space='RGB', spatial_size=(32, 32),
                 feature_image = cv2.cvtColor(image, cv2.COLOR_RGB2YUV)
             elif color_space == 'YCrCb':
                 feature_image = cv2.cvtColor(image, cv2.COLOR_RGB2YCrCb)
-        else: feature_image = np.copy(image)      
+        else: feature_image = np.copy(image)
+        # normalize image and convert to float
+        feature_image = feature_image.astype(np.float32)/255
+ 
         # computer spatial features if flag is set
         if spatial_feat == True:
             spatial_features = bin_spatial(feature_image, size=spatial_size)
