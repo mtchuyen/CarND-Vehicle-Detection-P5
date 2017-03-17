@@ -129,9 +129,9 @@ def main():
    file_name = "project_video.mp4"
    output_name = "output_project.mp4"
    n_samples = 0
-   debug = False # diagnotics... if debug on, display current frame and raw heatmap every second
+   debug = True # diagnotics... if debug on, display current frame and raw heatmap every second
    min_display=300 # initial frame to start from
-   skip =0 # fast forward to this frame, default = 0
+   skip =290 # fast forward to this frame, default = 0
       
    (X_scaler, svc) = train(color_space, orient, pix_per_cell, cell_per_block, hog_channel,
       spatial_size, hist_bins, spatial_feat, hist_feat, hog_feat,n_samples)   
